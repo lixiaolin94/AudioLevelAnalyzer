@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">Audio Level Analyzer</string>
+    <string name="state_playing">Playing</string>
+    <string name="state_paused">Paused</string>
+    <string name="toggle_playback">Toggle playback</string>
+    <string name="label_playback">Playback</string>
+    <string name="label_stops_hz">Stops (Hz)</string>
+    <string name="default_stops">20 / 81 / 170 / 527 / 1500 / 4500 / 10000</string>
+    <string name="label_raw_levels">Raw levels</string>
+    <string name="default_raw_levels">0.00 0.00 0.00 0.00 0.00 0.00</string>
+    <string name="label_bars">Bars</string>
+    <string name="label_input_gain">Input gain</string>
+    <string name="default_gain">2.0</string>
+    <string name="label_analysis_rate_hz">Analysis rate (Hz)</string>
+    <string name="default_analysis_rate">20</string>
+    <string name="label_response">Response</string>
+    <string name="default_response">0.50</string>
+    <string name="label_damping_ratio">Damping ratio</string>
+    <string name="default_damping_ratio">0.80</string>
+</resources>

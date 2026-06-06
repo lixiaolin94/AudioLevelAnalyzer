@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Audio Level Analyzer Adjustment Curve</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b0b0d;
+      --panel: #141417;
+      --text: #f5f5f7;
+      --muted: #a7a7ad;
+      --grid: #2d2d34;
+      --axis: #6f6f78;
+      --poly: #62a8ff;
+      --effective: #5ee0a0;
+      --tilt: #f1c86b;
+      --identity: #8d8d96;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    main {
+      width: min(1040px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 28px 0 36px;
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      font-size: 22px;
+      font-weight: 650;
+      letter-spacing: 0;
+    }
+
+    p {
+      max-width: 760px;
+      margin: 0 0 18px;
+      color: var(--muted);
+    }
+
+    .panel {
+      border: 1px solid #23232a;
+      background: var(--panel);
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 18px;
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .key {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      white-space: nowrap;
+    }
+
+    .swatch {
+      width: 20px;
+      height: 3px;
+      border-radius: 999px;
+      background: currentColor;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    input[type="range"] {
+      width: 100%;
+    }
+
+    code,
+    output {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      color: var(--text);
+    }
+
+    .formula {
+      margin-top: 16px;
+      display: grid;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    @media (max-width: 720px) {
+      .controls {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Adjustment Curve</h1>
+    <p>
+      The blue line is the default polynomial P(x). The green line is the
+      effective neutral output clamp(x * P(x), 0, 1). Yellow lines show the
+      default six-band frequency tilt: clamp(x * P(multiplier * x), 0, 1).
+    </p>
+
+    <section class="panel">
+      <canvas id="plot" width="1000" height="560" aria-label="Adjustment curve plot"></canvas>
+
+      <div class="legend">
+        <span class="key" style="color: var(--poly)"><span class="swatch"></span>P(x)</span>
+        <span class="key" style="color: var(--effective)"><span class="swatch"></span>clamp(x * P(x))</span>
+        <span class="key" style="color: var(--tilt)"><span class="swatch"></span>default band tilt</span>
+        <span class="key" style="color: var(--identity)"><span class="swatch"></span>identity</span>
+      </div>
+
+      <div class="controls">
+        <label>
+          x max: <output id="xMaxOut">1.60</output>
+          <input id="xMax" type="range" min="1" max="3" step="0.05" value="1.6">
+        </label>
+        <label>
+          selected multiplier: <output id="multiplierOut">1.00</output>
+          <input id="multiplier" type="range" min="0" max="1.25" step="0.01" value="1">
+        </label>
+      </div>
+
+      <div class="formula">
+        <code>P(x) = 3.840823x - 8.182433x^2 + 7.772333x^3 - 2.430722x^4</code>
+        <code>multiplier = 1 + (frequencyTiltEnd - 1) * bandIndex / (barCount - 1)</code>
+        <code>actual band output = clamp(v * P(multiplier * v), 0, 1)</code>
+        <code>default multipliers for six bars = 1.00, 0.85, 0.70, 0.55, 0.40, 0.25</code>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const coefficients = [0, 3.840823, -8.182433, 7.772333, -2.430722];
+    const defaultMultipliers = [1, 0.85, 0.70, 0.55, 0.40, 0.25];
+
+    const canvas = document.getElementById("plot");
+    const ctx = canvas.getContext("2d");
+    const xMaxInput = document.getElementById("xMax");
+    const multiplierInput = document.getElementById("multiplier");
+    const xMaxOut = document.getElementById("xMaxOut");
+    const multiplierOut = document.getElementById("multiplierOut");
+
+    function poly(x) {
+      let result = 0;
+      for (let i = coefficients.length - 1; i >= 0; i--) {
+        result = result * x + coefficients[i];
+      }
+      return result;
+    }
+
+    function clamp01(value) {
+      return Math.max(0, Math.min(1, value));
+    }
+
+    function draw() {
+      const dpr = window.devicePixelRatio || 1;
+      const cssWidth = canvas.clientWidth || 1000;
+      const cssHeight = Math.round(cssWidth * 0.56);
+      if (canvas.width !== Math.round(cssWidth * dpr) ||
+          canvas.height !== Math.round(cssHeight * dpr)) {
+        canvas.width = Math.round(cssWidth * dpr);
+        canvas.height = Math.round(cssHeight * dpr);
+      }
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      const w = cssWidth;
+      const h = cssHeight;
+      const pad = { left: 54, right: 18, top: 22, bottom: 42 };
+      const plotW = w - pad.left - pad.right;
+      const plotH = h - pad.top - pad.bottom;
+      const xMax = Number(xMaxInput.value);
+      const yMin = -0.35;
+      const yMax = 1.25;
+      const selectedMultiplier = Number(multiplierInput.value);
+
+      xMaxOut.value = xMax.toFixed(2);
+      multiplierOut.value = selectedMultiplier.toFixed(2);
+
+      ctx.clearRect(0, 0, w, h);
+
+      const sx = x => pad.left + (x / xMax) * plotW;
+      const sy = y => pad.top + (1 - (y - yMin) / (yMax - yMin)) * plotH;
+
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = getCss("--grid");
+      ctx.fillStyle = getCss("--muted");
+      ctx.font = "12px ui-monospace, SFMono-Regular, Menlo, monospace";
+
+      for (let x = 0; x <= xMax + 0.0001; x += 0.2) {
+        line(sx(x), pad.top, sx(x), pad.top + plotH);
+        ctx.fillText(x.toFixed(1), sx(x) - 10, pad.top + plotH + 24);
+      }
+      for (let y = -0.2; y <= 1.21; y += 0.2) {
+        line(pad.left, sy(y), pad.left + plotW, sy(y));
+        ctx.fillText(y.toFixed(1), 10, sy(y) + 4);
+      }
+
+      ctx.strokeStyle = getCss("--axis");
+      ctx.lineWidth = 1.25;
+      line(pad.left, sy(0), pad.left + plotW, sy(0));
+      line(pad.left, pad.top, pad.left, pad.top + plotH);
+
+      drawCurve(x => x, getCss("--identity"), 1, [4, 5], xMax, sx, sy);
+      drawCurve(x => poly(x), getCss("--poly"), 2, null, xMax, sx, sy);
+      drawCurve(x => clamp01(x * poly(x)), getCss("--effective"), 2.5, null, xMax, sx, sy);
+
+      for (const multiplier of defaultMultipliers) {
+        drawCurve(
+          x => clamp01(x * poly(multiplier * x)),
+          colorWithAlpha(getCss("--tilt"), multiplier === 1 ? 0.25 : 0.58),
+          multiplier === 1 ? 1 : 1.25,
+          null,
+          xMax,
+          sx,
+          sy
+        );
+      }
+
+      drawCurve(
+        x => clamp01(x * poly(selectedMultiplier * x)),
+        getCss("--tilt"),
+        3,
+        null,
+        xMax,
+        sx,
+        sy
+      );
+
+      ctx.fillStyle = getCss("--text");
+      ctx.font = "13px ui-monospace, SFMono-Regular, Menlo, monospace";
+      ctx.fillText("x", pad.left + plotW - 8, pad.top + plotH + 38);
+      ctx.fillText("y", 28, pad.top + 8);
+    }
+
+    function drawCurve(fn, stroke, width, dash, xMax, sx, sy) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.strokeStyle = stroke;
+      ctx.lineWidth = width;
+      ctx.setLineDash(dash || []);
+      const steps = 720;
+      for (let i = 0; i <= steps; i++) {
+        const x = (i / steps) * xMax;
+        const y = fn(x);
+        if (i === 0) {
+          ctx.moveTo(sx(x), sy(y));
+        } else {
+          ctx.lineTo(sx(x), sy(y));
+        }
+      }
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function line(x1, y1, x2, y2) {
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+    }
+
+    function getCss(name) {
+      return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    }
+
+    function colorWithAlpha(hex, alpha) {
+      const value = hex.replace("#", "");
+      const r = parseInt(value.slice(0, 2), 16);
+      const g = parseInt(value.slice(2, 4), 16);
+      const b = parseInt(value.slice(4, 6), 16);
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+
+    xMaxInput.addEventListener("input", draw);
+    multiplierInput.addEventListener("input", draw);
+    window.addEventListener("resize", draw);
+    draw();
+  </script>
+</body>
+</html>

@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    tools:context=".MainActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:paddingHorizontal="32dp"
+        android:paddingTop="28dp"
+        android:paddingBottom="32dp">
+
+        <FrameLayout
+            android:id="@+id/visualStage"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:clickable="true"
+            android:focusable="true"
+            android:minHeight="220dp">
+
+            <work.xiaolin.audiolevelanalyzer.example.ui.LevelBarsView
+                android:id="@+id/levelBars"
+                android:layout_width="160dp"
+                android:layout_height="194dp"
+                android:layout_gravity="center" />
+        </FrameLayout>
+
+        <LinearLayout
+            android:id="@+id/bottomPanel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:id="@+id/infoPanel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginBottom="8dp"
+                    android:background="#1FFFFFFF" />
+
+                <LinearLayout style="@style/InfoRow">
+                    <TextView style="@style/InfoKey" android:text="@string/label_playback" />
+                    <TextView android:id="@+id/playbackStateValue" style="@style/InfoVal" android:text="@string/state_playing" />
+                </LinearLayout>
+
+                <LinearLayout style="@style/InfoRow">
+                    <TextView style="@style/InfoKey" android:text="@string/label_stops_hz" />
+                    <TextView android:id="@+id/stopsValue" style="@style/InfoVal" android:text="@string/default_stops" />
+                </LinearLayout>
+
+                <LinearLayout style="@style/InfoRow">
+                    <TextView style="@style/InfoKey" android:text="@string/label_raw_levels" />
+                    <TextView android:id="@+id/rawLevelsValue" style="@style/InfoVal" android:text="@string/default_raw_levels" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="22dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_bars"
+                    android:textColor="#99FFFFFF"
+                    android:textSize="12sp" />
+
+                <work.xiaolin.audiolevelanalyzer.example.ui.BarCountSelectorView
+                    android:id="@+id/barCountSelector"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="18dp"
+                    android:layout_weight="1" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_input_gain"
+                    android:textColor="#99FFFFFF"
+                    android:textSize="12sp" />
+
+                <Space
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+
+                <TextView
+                    android:id="@+id/gainValue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="monospace"
+                    android:text="@string/default_gain"
+                    android:textColor="#FFFFFF"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <work.xiaolin.audiolevelanalyzer.example.ui.ValueSliderView
+                android:id="@+id/gainSeek"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_analysis_rate_hz"
+                    android:textColor="#99FFFFFF"
+                    android:textSize="12sp" />
+
+                <Space
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+
+                <TextView
+                    android:id="@+id/analysisRateValue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="monospace"
+                    android:text="@string/default_analysis_rate"
+                    android:textColor="#FFFFFF"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <work.xiaolin.audiolevelanalyzer.example.ui.ValueSliderView
+                android:id="@+id/analysisRateSeek"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_response"
+                    android:textColor="#99FFFFFF"
+                    android:textSize="12sp" />
+
+                <Space
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+
+                <TextView
+                    android:id="@+id/responseValue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="monospace"
+                    android:text="@string/default_response"
+                    android:textColor="#FFFFFF"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <work.xiaolin.audiolevelanalyzer.example.ui.ValueSliderView
+                android:id="@+id/responseSeek"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_damping_ratio"
+                    android:textColor="#99FFFFFF"
+                    android:textSize="12sp" />
+
+                <Space
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+
+                <TextView
+                    android:id="@+id/dampingRatioValue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="monospace"
+                    android:text="@string/default_damping_ratio"
+                    android:textColor="#FFFFFF"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <work.xiaolin.audiolevelanalyzer.example.ui.ValueSliderView
+                android:id="@+id/dampingRatioSeek"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>
