@@ -37,9 +37,9 @@ tasks.withType<JavaCompile>().configureEach {
 publishing {
     publications {
         register<MavenPublication>("release") {
-            groupId = "com.github.lixiaolin94.AudioLevelAnalyzer"
-            artifactId = "audiolevelanalyzer"
-            version = "0.1.0"
+            groupId = "com.github.lixiaolin94"
+            artifactId = "AudioLevelAnalyzer"
+            version = "v0.1.0"
 
             afterEvaluate {
                 from(components["release"])

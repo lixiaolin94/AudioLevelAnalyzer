@@ -197,7 +197,7 @@ dependencyResolutionManagement {
         maven {
             url = uri("https://jitpack.io")
             content {
-                includeGroup("com.github.lixiaolin94.AudioLevelAnalyzer")
+                includeGroup("com.github.lixiaolin94")
             }
         }
     }
@@ -207,7 +207,7 @@ dependencyResolutionManagement {
 Then depend on the library module:
 
 ```kotlin
-implementation("com.github.lixiaolin94.AudioLevelAnalyzer:audiolevelanalyzer:v0.1.0")
+implementation("com.github.lixiaolin94:AudioLevelAnalyzer:v0.1.0")
 ```
 
 No token is needed when this repository is public.
